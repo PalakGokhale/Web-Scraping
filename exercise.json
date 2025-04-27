@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "exercise_name": "N/A",
   "category": "N/A",
@@ -8,4 +9,16 @@
   "benefits": [],
   "suitable_for": "Both",
   "level": "Intermediate"
+=======
+{
+  "exercise_name": "N/A",
+  "category": "N/A",
+  "target_muscles": [],
+  "equipment": "Barbell",
+  "instructions": [],
+  "common_mistakes": [],
+  "benefits": [],
+  "suitable_for": "Both",
+  "level": "Intermediate"
+>>>>>>> 8ecbcdbfe3636b835577a4dbad54f1b21810e350
 }
