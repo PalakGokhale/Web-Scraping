@@ -1,177 +1,80 @@
-<<<<<<< HEAD
 import requests
 from bs4 import BeautifulSoup
-import json
+import sys
 
-# URL for Yoga Poses list
-CATEGORY_URL = "https://www.yogajournal.com/poses"
+# Fix for Unicode output
+sys.stdout.reconfigure(encoding='utf-8')
 
-# Send request to the website
-response = requests.get(CATEGORY_URL)
+# Fetch the page
+url = "https://en.wikipedia.org/wiki/Yoga_as_exercise"
+response = requests.get(url)
+soup = BeautifulSoup(response.content, "html.parser")
 
-# Check if the request was successful
-if response.status_code == 200:
-    print("Successfully fetched the page")
-else:
-    print(f"Failed to retrieve the page. Status code: {response.status_code}")
-    exit()
+# Get the page title
+print("Page Title:", soup.title.string)
 
-# Parse the HTML content
-soup = BeautifulSoup(response.text, 'html.parser')
+# Extract the introduction (first paragraph before table of contents)
+intro_paragraphs = soup.select("div.mw-parser-output > p")
+print("\n--- Introduction ---")
+for p in intro_paragraphs:
+    if p.text.strip():
+        print(p.text.strip())
+        break
 
-# Find all the yoga pose links (can change the tag and class based on website structure)
-pose_links = []
-for a_tag in soup.find_all('a', class_='c-hero__link'):
-    href = a_tag.get('href')
-    if href and href.startswith('/poses/'):
-        full_url = f"https://www.yogajournal.com{href}"
-        pose_links.append(full_url)
+# Extract section headings and their content
+print("\n--- Section Details ---")
+for header in soup.select("h2"):
+    section_title = header.text.strip().replace('[edit]', '')
+    print(f"\n## {section_title}")
 
-# Function to scrape individual yoga pose data
-def scrape_yoga_pose(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
+    content = []
+    for tag in header.find_next_siblings():
+        if tag.name and tag.name.startswith('h2'):
+            break
+        if tag.name == 'p':
+            content.append(tag.text.strip())
+
+    print('\n'.join(content[:2]))  # Limit to first 2 paragraphs per section
+
+
+# Container for all pose data
+# poses = []
+
+# # Find all pose containers
+# pose_sections = soup.find_all(['h2', 'h3'])
+
+# current_pose = None
+
+# for tag in pose_sections:
+#     # Collect pose names (usually in h2 or h3 tags)
+#     if tag.name in ['h2', 'h3'] and tag.get_text(strip=True):
+#         if 'pose' in tag.get_text(strip=True).lower():
+#             if current_pose:
+#                 poses.append(current_pose)
+#             current_pose = {
+#                 'name': tag.get_text(strip=True),
+#                 'description': ''
+#             }
+#         elif current_pose:
+#             # Add additional titles to description
+#             current_pose['description'] += '\n' + tag.get_text(strip=True)
     
-    # Extract Yoga pose data
-    try:
-        name = soup.find('h1', class_='article__headline').text.strip()
-    except AttributeError:
-        name = "N/A"
-    
-    try:
-        sanskrit_name = soup.find('span', class_='sanskrit-name').text.strip()
-    except AttributeError:
-        sanskrit_name = "N/A"
-    
-    try:
-        benefits = [benefit.text.strip() for benefit in soup.find_all('li', class_='benefit-item')]
-    except AttributeError:
-        benefits = []
-    
-    try:
-        instructions = [step.text.strip() for step in soup.find_all('li', class_='instruction')]
-    except AttributeError:
-        instructions = []
-    
-    try:
-        precautions = [precaution.text.strip() for precaution in soup.find_all('li', class_='precaution')]
-    except AttributeError:
-        precautions = []
+#     # Append following paragraph content as description
+#     sibling = tag.find_next_sibling()
+#     while sibling and sibling.name == 'p':
+#         if current_pose:
+#             current_pose['description'] += '\n' + sibling.get_text(strip=True)
+#         sibling = sibling.find_next_sibling()
 
-    # Difficulty Level and Target Area
-    difficulty_level = soup.find('span', class_='difficulty-level')
-    target_area = soup.find('span', class_='target-area')
+# # Add last pose
+# if current_pose:
+#     poses.append(current_pose)
 
-    data = {
-        "yoga_pose_name": name,
-        "sanskrit_name": sanskrit_name,
-        "benefits": benefits,
-        "instructions": instructions,
-        "precautions": precautions,
-        "difficulty_level": difficulty_level.text.strip() if difficulty_level else "N/A",
-        "target_area": target_area.text.strip() if target_area else "N/A"
-    }
-    
-    return data
+# # Save to DataFrame
+# df = pd.DataFrame(poses)
 
-# Main script to scrape poses from Yoga Journal
-all_yoga_data = []
-for link in pose_links[:10]:  # Limit to first 10 poses for testing
-    print(f"Scraping yoga pose: {link}")
-    data = scrape_yoga_pose(link)
-    all_yoga_data.append(data)
+# # Export to CSV (optional)
+# df.to_csv("yoga_poses.csv", index=False)\
 
-# Save the scraped data into a JSON file
-with open("yoga_journal_poses.json", "w") as f:
-    json.dump(all_yoga_data, f, indent=2)
-
-print("✅ Yoga poses scraping complete. Data saved to 'yoga_journal_poses.json'")
-=======
-import requests
-from bs4 import BeautifulSoup
-import json
-
-# URL for Yoga Poses list
-CATEGORY_URL = "https://www.yogajournal.com/poses"
-
-# Send request to the website
-response = requests.get(CATEGORY_URL)
-
-# Check if the request was successful
-if response.status_code == 200:
-    print("Successfully fetched the page")
-else:
-    print(f"Failed to retrieve the page. Status code: {response.status_code}")
-    exit()
-
-# Parse the HTML content
-soup = BeautifulSoup(response.text, 'html.parser')
-
-# Find all the yoga pose links (can change the tag and class based on website structure)
-pose_links = []
-for a_tag in soup.find_all('a', class_='c-hero__link'):
-    href = a_tag.get('href')
-    if href and href.startswith('/poses/'):
-        full_url = f"https://www.yogajournal.com{href}"
-        pose_links.append(full_url)
-
-# Function to scrape individual yoga pose data
-def scrape_yoga_pose(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
-    # Extract Yoga pose data
-    try:
-        name = soup.find('h1', class_='article__headline').text.strip()
-    except AttributeError:
-        name = "N/A"
-    
-    try:
-        sanskrit_name = soup.find('span', class_='sanskrit-name').text.strip()
-    except AttributeError:
-        sanskrit_name = "N/A"
-    
-    try:
-        benefits = [benefit.text.strip() for benefit in soup.find_all('li', class_='benefit-item')]
-    except AttributeError:
-        benefits = []
-    
-    try:
-        instructions = [step.text.strip() for step in soup.find_all('li', class_='instruction')]
-    except AttributeError:
-        instructions = []
-    
-    try:
-        precautions = [precaution.text.strip() for precaution in soup.find_all('li', class_='precaution')]
-    except AttributeError:
-        precautions = []
-
-    # Difficulty Level and Target Area
-    difficulty_level = soup.find('span', class_='difficulty-level')
-    target_area = soup.find('span', class_='target-area')
-
-    data = {
-        "yoga_pose_name": name,
-        "sanskrit_name": sanskrit_name,
-        "benefits": benefits,
-        "instructions": instructions,
-        "precautions": precautions,
-        "difficulty_level": difficulty_level.text.strip() if difficulty_level else "N/A",
-        "target_area": target_area.text.strip() if target_area else "N/A"
-    }
-    
-    return data
-
-# Main script to scrape poses from Yoga Journal
-all_yoga_data = []
-for link in pose_links[:10]:  # Limit to first 10 poses for testing
-    print(f"Scraping yoga pose: {link}")
-    data = scrape_yoga_pose(link)
-    all_yoga_data.append(data)
-
-# Save the scraped data into a JSON file
-with open("yoga_journal_poses.json", "w") as f:
-    json.dump(all_yoga_data, f, indent=2)
-
-print("✅ Yoga poses scraping complete. Data saved to 'yoga_journal_poses.json'")
->>>>>>> 8ecbcdbfe3636b835577a4dbad54f1b21810e350
+# # Print results
+# print(df)
